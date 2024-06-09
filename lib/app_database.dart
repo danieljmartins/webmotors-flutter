@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:webmotors/main.dart';
+import 'veiculo.dart';
 
 Future<Database> createDatabase() {
   return getDatabasesPath().then(
@@ -13,18 +13,19 @@ Future<Database> createDatabase() {
       return openDatabase(
         path,
         onCreate: (db, version) {
-          db.execute('CREATE TABLE veiculos('
-              'id INTEGER PRIMARY KEY, '
-              'marca TEXT, '
-              'modelo TEXT, '
-              'ano INTEGER, '
-              'kilometragem REAL, '
-              'cor TEXT, '
-              'preco REAL)');
+          db.execute('''
+            CREATE TABLE veiculos(
+              id INTEGER PRIMARY KEY, 
+              marca TEXT, 
+              modelo TEXT, 
+              ano INTEGER, 
+              kilometragem REAL, 
+              cor TEXT, 
+              preco REAL)
+          ''');
         },
         version: 1,
-        onDowngrade:
-            onDatabaseDowngradeDelete, // Força a recriação do banco de dados
+        onDowngrade: onDatabaseDowngradeDelete,
       );
     },
   );
@@ -33,13 +34,14 @@ Future<Database> createDatabase() {
 Future<int> save(Veiculo veiculo) {
   return createDatabase().then(
     (db) {
-      final Map<String, dynamic> veiculoMap = {};
-      veiculoMap['marca'] = veiculo.marca;
-      veiculoMap['modelo'] = veiculo.modelo;
-      veiculoMap['ano'] = veiculo.ano;
-      veiculoMap['kilometragem'] = veiculo.kilometragem;
-      veiculoMap['cor'] = veiculo.cor;
-      veiculoMap['preco'] = veiculo.preco;
+      final Map<String, dynamic> veiculoMap = {
+        'marca': veiculo.marca,
+        'modelo': veiculo.modelo,
+        'ano': veiculo.ano,
+        'kilometragem': veiculo.kilometragem,
+        'cor': veiculo.cor,
+        'preco': veiculo.preco,
+      };
       return db.insert('veiculos', veiculoMap);
     },
   );
@@ -52,16 +54,15 @@ Future<List<Veiculo>> findAll() {
         (maps) {
           final List<Veiculo> veiculos = [];
           for (Map<String, dynamic> map in maps) {
-            final int id = map['id'] ?? 0;
-            final String marca = map['marca'] ?? '';
-            final String modelo = map['modelo'] ?? '';
-            final int ano = map['ano'] ?? 0;
-            final double kilometragem = map['kilometragem'] ?? 0.0;
-            final String cor = map['cor'] ?? '';
-            final double preco = map['preco'] ?? 0.0;
-
-            final Veiculo veiculo =
-                Veiculo(id, marca, modelo, ano, kilometragem, cor, preco);
+            final Veiculo veiculo = Veiculo(
+              map['id'] ?? 0,
+              map['marca'] ?? '',
+              map['modelo'] ?? '',
+              map['ano'] ?? 0,
+              map['kilometragem'] ?? 0.0,
+              map['cor'] ?? '',
+              map['preco'] ?? 0.0,
+            );
             veiculos.add(veiculo);
           }
           return veiculos;
